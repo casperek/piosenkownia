@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Głosowania na Piosenki</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    #songList {
+      margin-bottom: 20px;
+    }
+
+    #voteResults {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>System Głosowania na Piosenki</h1>
+
+  <div>
+    <label for="songTitle">Wpisz tytuł piosenki:</label>
+    <input type="text" id="songTitle" placeholder="Tytuł piosenki">
+    <button onclick="addSong()">Dodaj Piosenkę</button>
+  </div>
+
+  <div id="songList">
+    <h2>Lista Piosenek</h2>
+    <ul id="songs"></ul>
+  </div>
+
+  <div id="voteResults">
+    <h2>Wyniki Głosowania</h2>
+    <ul id="results"></ul>
+  </div>
+
+  <script>
+    let songs = [];
+    let votingActive = false;
+
+    function addSong() {
+      const songTitleInput = document.getElementById("songTitle");
+      const songTitle = songTitleInput.value.trim();
+
+      if (songTitle === "") {
+        alert("Wpisz tytuł piosenki!");
+        return;
+      }
+
+      if (!votingActive) {
+        songs.push({ title: songTitle, votes: 0 });
+        updateSongList();
+      } else {
+        alert("Głosowanie trwa, nie można dodawać nowych piosenek.");
+      }
+
+      songTitleInput.value = "";
+    }
+
+    function startVoting() {
+      if (votingActive) {
+        alert("Głosowanie już trwa!");
+        return;
+      }
+
+      resetResults();
+      votingActive = true;
+      setTimeout(endVoting, 120000); // 2 minuty głosowania
+    }
+
+    function endVoting() {
+      votingActive = false;
+      const maxVotes = Math.max(...songs.map(song => song.votes));
+      const winningSong = songs.find(song => song.votes === maxVotes);
+
+      if (winningSong) {
+        alert(`Piosenka "${winningSong.title}" zwycięża z ${maxVotes} głosami!`);
+        songs = songs.filter(song => song !== winningSong);
+        updateSongList();
+        updateResults();
+      } else {
+        alert("Głosowanie zakończone, ale nie ma zwycięzcy!");
+      }
+    }
+
+    function vote(index) {
+      if (!votingActive) {
+        alert("Głosowanie jeszcze się nie rozpoczęło!");
+        return;
+      }
+
+      songs[index].votes++;
+      updateResults();
+    }
+
+    function resetResults() {
+      const resultsList = document.getElementById("results");
+      resultsList.innerHTML = "";
+    }
+
+    function updateResults() {
+      const resultsList = document.getElementById("results");
+      resultsList.innerHTML = "";
+
+      songs.forEach((song, index) => {
+        const listItem = document.createElement("li");
+        listItem.textContent = `${song.title}: ${song.votes} głosów`;
+        listItem.onclick = () => vote(index);
+        resultsList.appendChild(listItem);
+      });
+    }
+
+    function updateSongList() {
+      const songsList = document.getElementById("songs");
+      songsList.innerHTML = "";
+
+      songs.forEach(song => {
+        const listItem = document.createElement("li");
+        listItem.textContent = song.title;
+        songsList.appendChild(listItem);
+      });
+    }
+  </script>
+
+  <button onclick="startVoting()">Rozpocznij Głosowanie</button>
+
+</body>
+</html>
